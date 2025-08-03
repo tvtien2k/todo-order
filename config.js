@@ -2,7 +2,7 @@
 
 // Giá món ăn (VNĐ)
 const PRICES = {
-    mainDish: 15000, // Món chính (mì nấu/mì xào)
+    mainDish: 20000, // Món chính (mì nấu/mì xào)
     topping: 5000    // Mỗi topping
 };
 
