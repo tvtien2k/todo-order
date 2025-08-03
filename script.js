@@ -61,12 +61,21 @@ function setupEventListeners() {
         }
     });
     
-    // Resize window để cập nhật mô tả món
+    // Resize window để cập nhật mô tả món (chỉ khi thực sự cần thiết)
+    let lastWindowWidth = window.innerWidth;
     window.addEventListener('resize', function() {
-        clearTimeout(window.resizeTimeout);
-        window.resizeTimeout = setTimeout(() => {
-            updateOrderTable();
-        }, ANIMATION_CONFIG.RESIZE_DEBOUNCE);
+        const currentWidth = window.innerWidth;
+        // Chỉ cập nhật khi chuyển đổi giữa mobile và desktop
+        const wasMobile = lastWindowWidth <= BREAKPOINTS.MOBILE;
+        const isMobile = currentWidth <= BREAKPOINTS.MOBILE;
+        
+        if (wasMobile !== isMobile) {
+            clearTimeout(window.resizeTimeout);
+            window.resizeTimeout = setTimeout(() => {
+                updateOrderTable();
+            }, ANIMATION_CONFIG.RESIZE_DEBOUNCE);
+        }
+        lastWindowWidth = currentWidth;
     });
     
     // Initialize dish options
@@ -268,50 +277,62 @@ function updateOrderTable() {
     const ordersList = document.getElementById('ordersList');
     const filteredOrders = filterOrders(orders, currentFilter);
     
-    ordersList.innerHTML = '';
+    // Kiểm tra xem có thay đổi thực sự không
+    const currentContent = ordersList.innerHTML;
+    const newContent = generateOrdersHTML(filteredOrders);
     
-    if (filteredOrders.length === 0) {
-        ordersList.innerHTML = `<div class="empty-state">${UI_LABELS.EMPTY_STATE}</div>`;
-        return;
-    }
-    
-    filteredOrders.forEach((order, index) => {
-        const orderItem = createOrderItem(order, index + 1);
-        orderItem.style.opacity = '0';
-        orderItem.style.transform = 'translateY(20px)';
-        ordersList.appendChild(orderItem);
+    if (currentContent !== newContent) {
+        ordersList.innerHTML = newContent;
         
-        setTimeout(() => {
-            orderItem.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-            orderItem.style.opacity = '1';
-            orderItem.style.transform = 'translateY(0)';
-        }, index * ANIMATION_CONFIG.STAGGER_DELAY);
-    });
+        // Chỉ thêm animation cho các item mới
+        if (filteredOrders.length > 0) {
+            const orderItems = ordersList.querySelectorAll('.order-item');
+            orderItems.forEach((orderItem, index) => {
+                orderItem.style.opacity = '0';
+                orderItem.style.transform = 'translateY(20px)';
+                
+                // Thêm event listeners cho swipe
+                addSwipeListeners(orderItem);
+                
+                setTimeout(() => {
+                    orderItem.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                    orderItem.style.opacity = '1';
+                    orderItem.style.transform = 'translateY(0)';
+                }, index * ANIMATION_CONFIG.STAGGER_DELAY);
+            });
+        }
+    }
 }
 
-// Tạo item cho danh sách món
-function createOrderItem(order, index) {
-    const orderItem = document.createElement('div');
-    orderItem.className = 'order-item';
-    orderItem.dataset.orderId = order.id;
+// Tạo HTML cho danh sách món ăn
+function generateOrdersHTML(filteredOrders) {
+    if (filteredOrders.length === 0) {
+        return `<div class="empty-state">${UI_LABELS.EMPTY_STATE}</div>`;
+    }
     
-    const dishDescription = createDishDescription(order);
-    const timeString = formatTime(order.timestamp);
-    
-    orderItem.innerHTML = `
-        <div class="order-content">
-            <div class="order-info">
-                <div class="customer-name">${order.customerName}</div>
-                <div class="dish-info">${dishDescription}</div>
+    return filteredOrders.map((order, index) => {
+        const dishDescription = createDishDescription(order);
+        const timeString = formatTime(order.timestamp);
+        
+        return `
+            <div class="order-item" data-order-id="${order.id}">
+                <div class="order-content">
+                    <div class="order-info">
+                        <div class="customer-name">${order.customerName}</div>
+                        <div class="dish-info">${dishDescription}</div>
+                    </div>
+                    <div class="order-meta">
+                        <div class="order-price">${order.totalPrice.toLocaleString('vi-VN')} VNĐ</div>
+                        <div class="order-time">${timeString}</div>
+                    </div>
+                </div>
             </div>
-            <div class="order-meta">
-                <div class="order-price">${order.totalPrice.toLocaleString('vi-VN')} VNĐ</div>
-                <div class="order-time">${timeString}</div>
-            </div>
-        </div>
-    `;
-    
-    // Thêm event listeners cho swipe
+        `;
+    }).join('');
+}
+
+// Thêm event listeners cho swipe
+function addSwipeListeners(orderItem) {
     let isSwiping = false;
     
     orderItem.addEventListener('touchstart', (e) => {
@@ -336,8 +357,6 @@ function createOrderItem(order, index) {
             resetItemPosition(orderItem);
         }
     });
-    
-    return orderItem;
 }
 
 // Format thời gian
