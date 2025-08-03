@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Món Ăn</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍜 Quản lý Món Ăn</h1>
+            <button class="btn-add" onclick="openAddModal()">+ Thêm món</button>
+        </header>
+
+        <main>
+            <!-- Danh sách món -->
+            <div class="order-list">
+                <div class="list-header">
+                    <h2>Danh sách món</h2>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="pending">
+                            Chưa làm
+                            <span class="filter-count" id="pendingCount">0</span>
+                        </button>
+                        <button class="filter-btn" data-filter="cooked">
+                            Đã làm
+                            <span class="filter-count" id="cookedCount">0</span>
+                        </button>
+                        <button class="filter-btn" data-filter="paid">
+                            Đã trả tiền
+                            <span class="filter-count" id="paidCount">0</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="orders-list" id="ordersList">
+                    <!-- Dữ liệu sẽ được thêm vào đây bằng JavaScript -->
+                </div>
+            </div>
+
+            <!-- Thống kê tiền ở dưới cùng -->
+            <div class="stats-bottom">
+                <div class="stat-item">
+                    <span class="stat-label">Chưa thu</span>
+                    <span class="stat-value" id="pendingRevenue">0 VNĐ</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Đã thu</span>
+                    <span class="stat-value" id="collectedRevenue">0 VNĐ</span>
+                </div>
+            </div>
+        </main>
+        <div style="text-align:center; margin: 32px 0 0 0;">
+            <button id="deleteAllBtn" class="btn-delete" style="padding: 12px 32px; font-size: 16px;">🗑️ Xóa tất cả dữ liệu</button>
+        </div>
+    </div>
+
+    <!-- Modal thêm món -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Thêm món mới</h3>
+                <button class="modal-close" onclick="closeAddModal()">&times;</button>
+            </div>
+            
+            <form id="orderForm">
+                <input type="hidden" id="editOrderId" name="editOrderId">
+                
+                <div class="form-group">
+                    <label for="customerName">Tên khách</label>
+                    <input type="text" id="customerName" name="customerName" placeholder="Để trống sẽ lấy số thứ tự">
+                </div>
+
+                <div class="form-group">
+                    <label>Món chính</label>
+                    <div class="dish-options" id="mainDishOptions">
+                        <!-- Sẽ được tạo bằng JavaScript -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Topping 1</label>
+                    <div class="dish-options" id="topping1Options">
+                        <!-- Sẽ được tạo bằng JavaScript -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Topping 2</label>
+                    <div class="dish-options" id="topping2Options">
+                        <!-- Sẽ được tạo bằng JavaScript -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Số lượng</label>
+                    <div class="quantity-control">
+                        <button type="button" class="quantity-btn" onclick="changeQuantity(-1)">-</button>
+                        <input type="number" id="quantity" name="quantity" value="1" min="1" max="10" readonly>
+                        <button type="button" class="quantity-btn" onclick="changeQuantity(1)">+</button>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeAddModal()">Hủy</button>
+                    <button type="submit" class="btn-primary" id="submitBtn">Thêm món</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html> 
